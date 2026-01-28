@@ -38,6 +38,7 @@ function AuthInitializer({ children }: { children: ReactNode }) {
     }
 
     dispatch(setLoading(false));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsInitialized(true);
   }, [dispatch]);
 

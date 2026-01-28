@@ -1,7 +1,7 @@
 // User Types
 export interface User {
   id: string;
-  username: string;
+  email: string;
   nama_admin: string;
   role: "admin" | "petugas";
   createdAt: string;
@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -23,7 +23,7 @@ export interface LoginResponse {
 }
 
 export interface RegisterRequest {
-  username: string;
+  email: string;
   password: string;
   nama_admin: string;
   role: "admin" | "petugas";

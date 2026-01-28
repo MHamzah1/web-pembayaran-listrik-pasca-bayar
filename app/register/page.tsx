@@ -14,7 +14,7 @@ import { authService } from "@/services";
 
 const registerSchema = z
   .object({
-    username: z.string().min(3, "Username minimal 3 karakter"),
+    email: z.string().min(3, "email minimal 3 karakter"),
     password: z.string().min(6, "Password minimal 6 karakter"),
     confirmPassword: z
       .string()
@@ -160,11 +160,11 @@ export default function RegisterPage() {
                 />
 
                 <Input
-                  label="Username"
-                  placeholder="Masukkan username"
+                  label="email"
+                  placeholder="Masukkan email"
                   leftIcon={Mail}
-                  error={errors.username?.message}
-                  {...register("username")}
+                  error={errors.email?.message}
+                  {...register("email")}
                 />
 
                 <div className="relative">

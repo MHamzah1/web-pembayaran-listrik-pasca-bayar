@@ -17,7 +17,7 @@ import { useAppDispatch } from "@/hooks/useRedux";
 import { setCredentials } from "@/store/slices/authSlice";
 
 const loginSchema = z.object({
-  username: z.string().min(3, "Username minimal 3 karakter"),
+  email: z.string().min(3, "Email minimal 3 karakter"),
   password: z.string().min(6, "Password minimal 6 karakter"),
 });
 
@@ -56,7 +56,7 @@ export default function LoginPage() {
         );
 
         toast.success("Login berhasil! Selamat datang.");
-        router.push("/dashboard");
+        // router.push("/dashboard");
       } else {
         toast.error(response.message || "Login gagal");
       }
@@ -146,11 +146,11 @@ export default function LoginPage() {
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <Input
-                  label="Username"
-                  placeholder="Masukkan username"
+                  label="email"
+                  placeholder="Masukkan email"
                   leftIcon={Mail}
-                  error={errors.username?.message}
-                  {...register("username")}
+                  error={errors.email?.message}
+                  {...register("email")}
                 />
 
                 <div className="relative">

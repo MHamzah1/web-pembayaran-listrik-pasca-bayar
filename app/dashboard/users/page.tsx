@@ -35,7 +35,7 @@ import { z } from "zod";
 import { useAppSelector } from "@/hooks/useRedux";
 
 const userSchema = z.object({
-  username: z.string().min(3, "Username minimal 3 karakter"),
+  email: z.string().min(3, "email minimal 3 karakter"),
   password: z
     .string()
     .min(6, "Password minimal 6 karakter")
@@ -121,7 +121,7 @@ export default function UsersPage() {
   const openCreateModal = () => {
     setEditingUser(null);
     reset({
-      username: "",
+      email: "",
       password: "",
       nama_admin: "",
       role: "petugas",
@@ -131,7 +131,7 @@ export default function UsersPage() {
 
   const openEditModal = (user: User) => {
     setEditingUser(user);
-    setValue("username", user.username);
+    setValue("email", user.email);
     setValue("nama_admin", user.nama_admin);
     setValue("role", user.role);
     setValue("password", "");
@@ -147,7 +147,7 @@ export default function UsersPage() {
   const onSubmit = (formData: UserFormData) => {
     if (editingUser) {
       const updateData: Partial<RegisterRequest> = {
-        username: formData.username,
+        email: formData.email,
         nama_admin: formData.nama_admin,
         role: formData.role,
       };
@@ -257,7 +257,7 @@ export default function UsersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Pengguna</TableHead>
-                    <TableHead>Username</TableHead>
+                    <TableHead>email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Terdaftar</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
@@ -274,9 +274,7 @@ export default function UsersPage() {
                           <span className="font-medium">{user.nama_admin}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono">
-                        @{user.username}
-                      </TableCell>
+                      <TableCell className="font-mono">@{user.email}</TableCell>
                       <TableCell>
                         <Badge
                           variant={user.role === "admin" ? "purple" : "primary"}
@@ -354,10 +352,10 @@ export default function UsersPage() {
           />
 
           <Input
-            label="Username"
-            placeholder="Masukkan username"
-            error={errors.username?.message}
-            {...register("username")}
+            label="email"
+            placeholder="Masukkan email"
+            error={errors.email?.message}
+            {...register("email")}
           />
 
           <Input

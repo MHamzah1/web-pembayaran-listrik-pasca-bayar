@@ -218,9 +218,7 @@ export default function DashboardLayout({ children }: SidebarProps) {
                         <p className="text-sm font-semibold text-gray-900">
                           {user?.nama_admin}
                         </p>
-                        <p className="text-xs text-gray-500">
-                          @{user?.username}
-                        </p>
+                        <p className="text-xs text-gray-500">@{user?.email}</p>
                       </div>
                       <Link
                         href="/dashboard/settings"
