@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://192.168.15.24:7070/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://172.29.224.1:7070/api";
 
 const api = axios.create({
   baseURL: API_URL,

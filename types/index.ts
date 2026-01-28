@@ -2,8 +2,11 @@
 export interface User {
   id: string;
   email: string;
-  nama_admin: string;
-  role: "admin" | "petugas";
+  fullName: string;
+  phoneNumber: string;
+  whatsappNumber?: string;
+  location?: string;
+  role: "customer" | "admin" | "salesman";
   createdAt: string;
   updatedAt: string;
 }
@@ -14,91 +17,104 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  success: boolean;
-  message: string;
-  data: {
-    token: string;
-    user: User;
-  };
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: User;
 }
 
 export interface RegisterRequest {
   email: string;
   password: string;
-  nama_admin: string;
-  role: "admin" | "petugas";
+  fullName: string;
+  phoneNumber: string;
+  whatsappNumber?: string;
+  location?: string;
+  role: "customer" | "admin" | "salesman";
 }
 
 // Tarif Types
 export interface Tarif {
   id: string;
+  kodeTarif: string;
+  deskripsi: string;
+  tarifPerKwh: number;
   daya: number;
-  tarifperkwh: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface TarifRequest {
+  kodeTarif: string;
+  deskripsi: string;
+  tarifPerKwh: number;
   daya: number;
-  tarifperkwh: number;
 }
 
 // Pelanggan Types
 export interface Pelanggan {
   id: string;
-  id_pelanggan: string;
-  nama: string;
+  idPelanggan: string;
+  namaPelanggan: string;
   alamat: string;
-  no_telp: string;
-  id_tarif: string;
+  nomorTelepon: string;
+  nomorMeter: string;
+  tarifId: string;
   tarif?: Tarif;
+  status: "aktif" | "nonaktif";
   createdAt: string;
   updatedAt: string;
 }
 
 export interface PelangganRequest {
-  id_pelanggan: string;
-  nama: string;
+  idPelanggan: string;
+  namaPelanggan: string;
   alamat: string;
-  no_telp: string;
-  id_tarif: string;
+  nomorTelepon: string;
+  nomorMeter: string;
+  tarifId: string;
+  status?: "aktif" | "nonaktif";
 }
 
 // Tagihan Types
 export interface Tagihan {
   id: string;
-  id_pelanggan: string;
-  bulan: string;
-  tahun: string;
-  meter_awal: number;
-  meter_akhir: number;
-  jumlah_meter: number;
-  total_bayar: number;
-  status: "belum_bayar" | "lunas";
+  pelangganId: string;
+  bulanTagihan: string;
+  meterAwal: number;
+  meterAkhir: number;
+  jumlahPemakaian: number;
+  tarifPerKwh: number;
+  biayaPemakaian: number;
+  biayaAdmin: number;
   denda: number;
+  totalTagihan: number;
+  statusPembayaran: "belum_bayar" | "lunas";
+  jatuhTempo: string;
   pelanggan?: Pelanggan;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface TagihanRequest {
-  id_pelanggan: string;
-  bulan: string;
-  tahun: string;
-  meter_awal: number;
-  meter_akhir: number;
+  pelangganId: string;
+  bulanTagihan: string;
+  meterAwal: number;
+  meterAkhir: number;
 }
 
 // Pembayaran Types
 export interface Pembayaran {
   id: string;
-  id_tagihan: string;
-  id_user: string;
-  tanggal_pembayaran: string;
-  total_bayar: number;
-  biaya_admin: number;
-  total_akhir: number;
-  nomor_transaksi: string;
+  tagihanId: string;
+  userId: string;
+  nomorTransaksi: string;
+  totalBayar: number;
+  metodePembayaran: "tunai" | "transfer_bank" | "virtual_account" | "qris";
+  namaBank?: string;
+  nomorReferensi?: string;
+  tanggalPembayaran: string;
+  statusTransaksi: "pending" | "success" | "failed";
   tagihan?: Tagihan;
   user?: User;
   createdAt: string;
@@ -106,26 +122,28 @@ export interface Pembayaran {
 }
 
 export interface PembayaranRequest {
-  id_tagihan: string;
+  tagihanId: string;
+  metodePembayaran: "tunai" | "transfer_bank" | "virtual_account" | "qris";
+  namaBank?: string;
+  nomorReferensi?: string;
 }
 
 export interface Struk {
-  nomor_transaksi: string;
-  tanggal_pembayaran: string;
-  nama_pelanggan: string;
-  id_pelanggan: string;
+  nomorTransaksi: string;
+  tanggalPembayaran: string;
+  namaPelanggan: string;
+  idPelanggan: string;
   alamat: string;
-  bulan: string;
-  tahun: string;
-  meter_awal: number;
-  meter_akhir: number;
-  jumlah_meter: number;
-  tarif_per_kwh: number;
+  bulanTagihan: string;
+  meterAwal: number;
+  meterAkhir: number;
+  jumlahPemakaian: number;
+  tarifPerKwh: number;
   daya: number;
-  total_bayar: number;
+  biayaPemakaian: number;
+  biayaAdmin: number;
   denda: number;
-  biaya_admin: number;
-  total_akhir: number;
+  totalBayar: number;
   petugas: string;
 }
 

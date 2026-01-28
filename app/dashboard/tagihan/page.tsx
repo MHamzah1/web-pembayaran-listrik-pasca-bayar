@@ -28,14 +28,13 @@ import {
   TableCell,
   Modal,
   Input,
-  Select,
   Loading,
   Pagination,
   SearchInput,
   Badge,
 } from "@/components/ui";
 import { tagihanService, pelangganService } from "@/services";
-import { formatCurrency, getMonthName, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatBulanTagihan, formatNumber } from "@/lib/utils";
 import { Tagihan, TagihanRequest } from "@/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,33 +42,17 @@ import { z } from "zod";
 
 const tagihanSchema = z
   .object({
-    id_pelanggan: z.string().min(1, "ID Pelanggan harus diisi"),
-    bulan: z.string().min(1, "Pilih bulan"),
-    tahun: z.string().min(1, "Masukkan tahun"),
-    meter_awal: z.number().min(0, "Meter awal minimal 0"),
-    meter_akhir: z.number().min(0, "Meter akhir minimal 0"),
+    pelangganId: z.string().min(1, "ID Pelanggan harus diisi"),
+    bulanTagihan: z.string().min(1, "Pilih bulan tagihan (format: YYYY-MM)"),
+    meterAwal: z.number().min(0, "Meter awal minimal 0"),
+    meterAkhir: z.number().min(0, "Meter akhir minimal 0"),
   })
-  .refine((data) => data.meter_akhir >= data.meter_awal, {
+  .refine((data) => data.meterAkhir >= data.meterAwal, {
     message: "Meter akhir harus lebih besar dari meter awal",
-    path: ["meter_akhir"],
+    path: ["meterAkhir"],
   });
 
 type TagihanFormData = z.infer<typeof tagihanSchema>;
-
-const bulanOptions = [
-  { value: "01", label: "Januari" },
-  { value: "02", label: "Februari" },
-  { value: "03", label: "Maret" },
-  { value: "04", label: "April" },
-  { value: "05", label: "Mei" },
-  { value: "06", label: "Juni" },
-  { value: "07", label: "Juli" },
-  { value: "08", label: "Agustus" },
-  { value: "09", label: "September" },
-  { value: "10", label: "Oktober" },
-  { value: "11", label: "November" },
-  { value: "12", label: "Desember" },
-];
 
 export default function TagihanPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,7 +81,7 @@ export default function TagihanPage() {
   } = useForm<TagihanFormData>({
     resolver: zodResolver(tagihanSchema),
     defaultValues: {
-      tahun: new Date().getFullYear().toString(),
+      bulanTagihan: new Date().toISOString().slice(0, 7),
     },
   });
 
@@ -128,11 +111,10 @@ export default function TagihanPage() {
   const openCreateModal = () => {
     setIdPelanggan("");
     reset({
-      id_pelanggan: "",
-      bulan: "",
-      tahun: new Date().getFullYear().toString(),
-      meter_awal: 0,
-      meter_akhir: 0,
+      pelangganId: "",
+      bulanTagihan: new Date().toISOString().slice(0, 7),
+      meterAwal: 0,
+      meterAkhir: 0,
     });
     setIsModalOpen(true);
   };
@@ -148,14 +130,14 @@ export default function TagihanPage() {
   };
 
   const handleDelete = (tagihan: Tagihan) => {
-    if (tagihan.status === "lunas") {
+    if (tagihan.statusPembayaran === "lunas") {
       toast.error("Tagihan yang sudah lunas tidak dapat dihapus");
       return;
     }
 
     Swal.fire({
       title: "Hapus Tagihan?",
-      text: `Apakah Anda yakin ingin menghapus tagihan bulan ${getMonthName(tagihan.bulan)} ${tagihan.tahun}?`,
+      text: `Apakah Anda yakin ingin menghapus tagihan bulan ${formatBulanTagihan(tagihan.bulanTagihan)}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -246,33 +228,34 @@ export default function TagihanPage() {
                     <TableRow key={tagihan.id}>
                       <TableCell>
                         <span className="font-mono font-semibold text-blue-600">
-                          {tagihan.id_pelanggan}
+                          {tagihan.pelanggan?.idPelanggan ||
+                            tagihan.pelangganId}
                         </span>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {tagihan.pelanggan?.nama || "-"}
+                        {tagihan.pelanggan?.namaPelanggan || "-"}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          {getMonthName(tagihan.bulan)} {tagihan.tahun}
+                          {formatBulanTagihan(tagihan.bulanTagihan)}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
                           <p className="font-medium">
-                            {formatNumber(tagihan.jumlah_meter)} kWh
+                            {formatNumber(tagihan.jumlahPemakaian)} kWh
                           </p>
                           <p className="text-gray-400">
-                            {formatNumber(tagihan.meter_awal)} -{" "}
-                            {formatNumber(tagihan.meter_akhir)}
+                            {formatNumber(tagihan.meterAwal)} -{" "}
+                            {formatNumber(tagihan.meterAkhir)}
                           </p>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
                           <p className="font-semibold text-gray-900">
-                            {formatCurrency(tagihan.total_bayar)}
+                            {formatCurrency(tagihan.totalTagihan)}
                           </p>
                           {tagihan.denda > 0 && (
                             <p className="text-xs text-red-500">
@@ -282,7 +265,7 @@ export default function TagihanPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {tagihan.status === "lunas" ? (
+                        {tagihan.statusPembayaran === "lunas" ? (
                           <Badge variant="success">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Lunas
@@ -296,7 +279,7 @@ export default function TagihanPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          {tagihan.status === "belum_bayar" && (
+                          {tagihan.statusPembayaran === "belum_bayar" && (
                             <Button
                               variant="destructive"
                               size="icon"
@@ -339,8 +322,8 @@ export default function TagihanPage() {
             <Input
               label="ID Pelanggan"
               placeholder="Masukkan ID Pelanggan"
-              error={errors.id_pelanggan?.message}
-              {...register("id_pelanggan", {
+              error={errors.pelangganId?.message}
+              {...register("pelangganId", {
                 onChange: handleIdPelangganChange,
               })}
             />
@@ -351,7 +334,7 @@ export default function TagihanPage() {
                 ) : pelangganData?.data ? (
                   <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                     <p className="text-sm font-medium text-green-800">
-                      ✓ {pelangganData.data.nama}
+                      ✓ {pelangganData.data.namaPelanggan}
                     </p>
                     <p className="text-xs text-green-600">
                       {pelangganData.data.alamat} |{" "}
@@ -367,20 +350,12 @@ export default function TagihanPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Select
-              label="Bulan"
-              placeholder="Pilih bulan"
-              options={bulanOptions}
-              error={errors.bulan?.message}
-              {...register("bulan")}
-            />
+          <div className="grid grid-cols-1 gap-4">
             <Input
-              label="Tahun"
-              type="number"
-              placeholder="2024"
-              error={errors.tahun?.message}
-              {...register("tahun")}
+              label="Bulan Tagihan (YYYY-MM)"
+              type="month"
+              error={errors.bulanTagihan?.message}
+              {...register("bulanTagihan")}
             />
           </div>
 
@@ -389,15 +364,15 @@ export default function TagihanPage() {
               label="Meter Awal"
               type="number"
               placeholder="0"
-              error={errors.meter_awal?.message}
-              {...register("meter_awal", { valueAsNumber: true })}
+              error={errors.meterAwal?.message}
+              {...register("meterAwal", { valueAsNumber: true })}
             />
             <Input
               label="Meter Akhir"
               type="number"
               placeholder="0"
-              error={errors.meter_akhir?.message}
-              {...register("meter_akhir", { valueAsNumber: true })}
+              error={errors.meterAkhir?.message}
+              {...register("meterAkhir", { valueAsNumber: true })}
             />
           </div>
 

@@ -42,23 +42,24 @@ export default function LoginPage() {
     try {
       const response = await authService.login(data);
 
-      if (response.success) {
+      if (response.accessToken && response.user) {
         // Save to cookies
-        Cookies.set("token", response.data.token, { expires: 7 });
-        Cookies.set("user", JSON.stringify(response.data.user), { expires: 7 });
+        Cookies.set("token", response.accessToken, { expires: 7 });
+        Cookies.set("refreshToken", response.refreshToken, { expires: 7 });
+        Cookies.set("user", JSON.stringify(response.user), { expires: 7 });
 
         // Update Redux state
         dispatch(
           setCredentials({
-            user: response.data.user,
-            token: response.data.token,
+            user: response.user,
+            token: response.accessToken,
           }),
         );
 
         toast.success("Login berhasil! Selamat datang.");
-        // router.push("/dashboard");
+        router.push("/dashboard");
       } else {
-        toast.error(response.message || "Login gagal");
+        toast.error("Login gagal");
       }
     } catch (error: any) {
       const message =

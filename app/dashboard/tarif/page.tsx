@@ -32,8 +32,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 const tarifSchema = z.object({
+  kodeTarif: z.string().min(1, "Kode tarif wajib diisi"),
+  deskripsi: z.string().min(1, "Deskripsi wajib diisi"),
+  tarifPerKwh: z.number().min(1, "Tarif minimal Rp 1"),
   daya: z.number().min(1, "Daya minimal 1 VA"),
-  tarifperkwh: z.number().min(1, "Tarif minimal Rp 1"),
 });
 
 type TarifFormData = z.infer<typeof tarifSchema>;
@@ -98,14 +100,16 @@ export default function TarifPage() {
 
   const openCreateModal = () => {
     setEditingTarif(null);
-    reset({ daya: 0, tarifperkwh: 0 });
+    reset({ kodeTarif: "", deskripsi: "", tarifPerKwh: 0, daya: 0 });
     setIsModalOpen(true);
   };
 
   const openEditModal = (tarif: Tarif) => {
     setEditingTarif(tarif);
+    setValue("kodeTarif", tarif.kodeTarif);
+    setValue("deskripsi", tarif.deskripsi);
+    setValue("tarifPerKwh", tarif.tarifPerKwh);
     setValue("daya", tarif.daya);
-    setValue("tarifperkwh", tarif.tarifperkwh);
     setIsModalOpen(true);
   };
 
@@ -143,8 +147,10 @@ export default function TarifPage() {
   const tarifList = data?.data || [];
   const filteredTarif = tarifList.filter(
     (t) =>
+      t.kodeTarif.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.deskripsi.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.daya.toString().includes(searchQuery) ||
-      t.tarifperkwh.toString().includes(searchQuery),
+      t.tarifPerKwh.toString().includes(searchQuery),
   );
 
   return (
@@ -200,6 +206,8 @@ export default function TarifPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
+                  <TableHead>Kode Tarif</TableHead>
+                  <TableHead>Deskripsi</TableHead>
                   <TableHead>Daya (VA)</TableHead>
                   <TableHead>Tarif per kWh</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
@@ -210,6 +218,12 @@ export default function TarifPage() {
                   <TableRow key={tarif.id}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>
+                      <span className="font-semibold text-blue-600">
+                        {tarif.kodeTarif}
+                      </span>
+                    </TableCell>
+                    <TableCell>{tarif.deskripsi}</TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                           <Bolt className="w-4 h-4 text-blue-600" />
@@ -218,7 +232,7 @@ export default function TarifPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium text-emerald-600">
-                      {formatCurrency(tarif.tarifperkwh)}
+                      {formatCurrency(tarif.tarifPerKwh)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2">
@@ -259,6 +273,20 @@ export default function TarifPage() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Input
+            label="Kode Tarif"
+            placeholder="Contoh: R1"
+            error={errors.kodeTarif?.message}
+            {...register("kodeTarif")}
+          />
+
+          <Input
+            label="Deskripsi"
+            placeholder="Contoh: Rumah Tangga Kecil"
+            error={errors.deskripsi?.message}
+            {...register("deskripsi")}
+          />
+
+          <Input
             label="Daya (VA)"
             type="number"
             placeholder="Contoh: 900"
@@ -270,8 +298,8 @@ export default function TarifPage() {
             label="Tarif per kWh (Rp)"
             type="number"
             placeholder="Contoh: 1500"
-            error={errors.tarifperkwh?.message}
-            {...register("tarifperkwh", { valueAsNumber: true })}
+            error={errors.tarifPerKwh?.message}
+            {...register("tarifPerKwh", { valueAsNumber: true })}
           />
 
           <div className="flex justify-end gap-3 pt-4">

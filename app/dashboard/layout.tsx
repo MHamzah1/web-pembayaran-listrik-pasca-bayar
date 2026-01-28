@@ -156,11 +156,11 @@ export default function DashboardLayout({ children }: SidebarProps) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full flex items-center justify-center text-white font-semibold">
-              {user?.nama_admin?.charAt(0).toUpperCase() || "U"}
+              {user?.fullName?.charAt(0).toUpperCase() || "U"}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.nama_admin || "User"}
+                {user?.fullName || "User"}
               </p>
               <p className="text-xs text-gray-500 capitalize">
                 {user?.role || "Role"}
@@ -198,10 +198,10 @@ export default function DashboardLayout({ children }: SidebarProps) {
                   className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 transition-colors"
                 >
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                    {user?.nama_admin?.charAt(0).toUpperCase() || "U"}
+                    {user?.fullName?.charAt(0).toUpperCase() || "U"}
                   </div>
                   <span className="hidden sm:block text-sm font-medium text-gray-700">
-                    {user?.nama_admin || "User"}
+                    {user?.fullName || "User"}
                   </span>
                   <ChevronDown className="w-4 h-4 text-gray-400" />
                 </button>
@@ -216,9 +216,9 @@ export default function DashboardLayout({ children }: SidebarProps) {
                     >
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="text-sm font-semibold text-gray-900">
-                          {user?.nama_admin}
+                          {user?.fullName}
                         </p>
-                        <p className="text-xs text-gray-500">@{user?.email}</p>
+                        <p className="text-xs text-gray-500">{user?.email}</p>
                       </div>
                       <Link
                         href="/dashboard/settings"

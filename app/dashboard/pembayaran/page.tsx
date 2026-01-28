@@ -41,7 +41,7 @@ import {
 } from "@/services";
 import {
   formatCurrency,
-  getMonthName,
+  formatBulanTagihan,
   formatNumber,
   formatDateTime,
 } from "@/lib/utils";
@@ -69,8 +69,8 @@ export default function PembayaranPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (id_tagihan: string) =>
-      pembayaranService.create({ id_tagihan }),
+    mutationFn: (tagihanId: string) =>
+      pembayaranService.create({ tagihanId, metodePembayaran: "tunai" }),
     onSuccess: async (response) => {
       queryClient.invalidateQueries({ queryKey: ["pembayaran-history"] });
       queryClient.invalidateQueries({ queryKey: ["tagihan"] });
@@ -164,7 +164,7 @@ export default function PembayaranPage() {
 
   const getTotalBayar = () => {
     return selectedTagihan.reduce((total, tagihan) => {
-      return total + tagihan.total_bayar + tagihan.denda;
+      return total + tagihan.totalTagihan + tagihan.denda;
     }, 0);
   };
 
@@ -230,14 +230,14 @@ export default function PembayaranPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-2xl font-bold">
-                      {pelanggan.nama.charAt(0).toUpperCase()}
+                      {pelanggan.namaPelanggan.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900">
-                        {pelanggan.nama}
+                        {pelanggan.namaPelanggan}
                       </h3>
                       <p className="text-blue-600 font-mono font-semibold">
-                        {pelanggan.id_pelanggan}
+                        {pelanggan.idPelanggan}
                       </p>
                       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="flex items-center gap-2 text-gray-600">
@@ -246,7 +246,9 @@ export default function PembayaranPage() {
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Phone className="w-4 h-4" />
-                          <span className="text-sm">{pelanggan.no_telp}</span>
+                          <span className="text-sm">
+                            {pelanggan.nomorTelepon}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Bolt className="w-4 h-4" />
@@ -317,18 +319,17 @@ export default function PembayaranPage() {
                                 </div>
                                 <div>
                                   <p className="font-semibold text-gray-900">
-                                    {getMonthName(tagihan.bulan)}{" "}
-                                    {tagihan.tahun}
+                                    {formatBulanTagihan(tagihan.bulanTagihan)}
                                   </p>
                                   <p className="text-sm text-gray-500">
                                     Pemakaian:{" "}
-                                    {formatNumber(tagihan.jumlah_meter)} kWh
+                                    {formatNumber(tagihan.jumlahPemakaian)} kWh
                                   </p>
                                 </div>
                               </div>
                               <div className="text-right">
                                 <p className="font-bold text-gray-900">
-                                  {formatCurrency(tagihan.total_bayar)}
+                                  {formatCurrency(tagihan.totalTagihan)}
                                 </p>
                                 {tagihan.denda > 0 && (
                                   <p className="text-sm text-red-500">
@@ -370,10 +371,10 @@ export default function PembayaranPage() {
                         className="flex justify-between text-sm"
                       >
                         <span className="text-gray-600">
-                          {getMonthName(tagihan.bulan)} {tagihan.tahun}
+                          {formatBulanTagihan(tagihan.bulanTagihan)}
                         </span>
                         <span className="font-medium">
-                          {formatCurrency(tagihan.total_bayar + tagihan.denda)}
+                          {formatCurrency(tagihan.totalTagihan + tagihan.denda)}
                         </span>
                       </div>
                     ))}
@@ -447,17 +448,17 @@ export default function PembayaranPage() {
                     <TableRow key={pembayaran.id}>
                       <TableCell>
                         <span className="font-mono font-semibold text-blue-600">
-                          {pembayaran.nomor_transaksi}
+                          {pembayaran.nomorTransaksi}
                         </span>
                       </TableCell>
                       <TableCell>
-                        {formatDateTime(pembayaran.tanggal_pembayaran)}
+                        {formatDateTime(pembayaran.tanggalPembayaran)}
                       </TableCell>
                       <TableCell>
-                        {pembayaran.tagihan?.pelanggan?.nama || "-"}
+                        {pembayaran.tagihan?.pelanggan?.namaPelanggan || "-"}
                       </TableCell>
                       <TableCell className="font-semibold text-emerald-600">
-                        {formatCurrency(pembayaran.total_akhir)}
+                        {formatCurrency(pembayaran.totalBayar)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="success">
@@ -509,29 +510,27 @@ export default function PembayaranPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-500">No. Transaksi</span>
                   <span className="font-mono font-semibold">
-                    {strukData.nomor_transaksi}
+                    {strukData.nomorTransaksi}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Tanggal</span>
-                  <span>{formatDateTime(strukData.tanggal_pembayaran)}</span>
+                  <span>{formatDateTime(strukData.tanggalPembayaran)}</span>
                 </div>
               </div>
 
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">ID Pelanggan</span>
-                  <span className="font-mono">{strukData.id_pelanggan}</span>
+                  <span className="font-mono">{strukData.idPelanggan}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Nama</span>
-                  <span>{strukData.nama_pelanggan}</span>
+                  <span>{strukData.namaPelanggan}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Periode</span>
-                  <span>
-                    {getMonthName(strukData.bulan)} {strukData.tahun}
-                  </span>
+                  <span>{formatBulanTagihan(strukData.bulanTagihan)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Daya</span>
@@ -542,22 +541,22 @@ export default function PembayaranPage() {
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Meter Awal</span>
-                  <span>{formatNumber(strukData.meter_awal)}</span>
+                  <span>{formatNumber(strukData.meterAwal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Meter Akhir</span>
-                  <span>{formatNumber(strukData.meter_akhir)}</span>
+                  <span>{formatNumber(strukData.meterAkhir)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Pemakaian</span>
-                  <span>{formatNumber(strukData.jumlah_meter)} kWh</span>
+                  <span>{formatNumber(strukData.jumlahPemakaian)} kWh</span>
                 </div>
               </div>
 
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Tagihan</span>
-                  <span>{formatCurrency(strukData.total_bayar)}</span>
+                  <span>{formatCurrency(strukData.biayaPemakaian)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Denda</span>
@@ -565,7 +564,7 @@ export default function PembayaranPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Biaya Admin</span>
-                  <span>{formatCurrency(strukData.biaya_admin)}</span>
+                  <span>{formatCurrency(strukData.biayaAdmin)}</span>
                 </div>
               </div>
 
@@ -573,7 +572,7 @@ export default function PembayaranPage() {
                 <div className="flex justify-between text-lg font-bold">
                   <span>TOTAL</span>
                   <span className="text-emerald-600">
-                    {formatCurrency(strukData.total_akhir)}
+                    {formatCurrency(strukData.totalBayar)}
                   </span>
                 </div>
               </div>

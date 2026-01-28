@@ -29,7 +29,11 @@ import {
   Badge,
 } from "@/components/ui";
 import { pembayaranService } from "@/services";
-import { formatCurrency, formatDateTime, getMonthName } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatDateTime,
+  formatBulanTagihan,
+} from "@/lib/utils";
 
 export default function LaporanPage() {
   const [selectedDate, setSelectedDate] = useState(
@@ -166,12 +170,12 @@ export default function LaporanPage() {
                       <TableRow key={pembayaran.id}>
                         <TableCell>
                           <span className="font-mono font-semibold text-blue-600">
-                            {pembayaran.nomor_transaksi}
+                            {pembayaran.nomorTransaksi}
                           </span>
                         </TableCell>
                         <TableCell>
                           {new Date(
-                            pembayaran.tanggal_pembayaran,
+                            pembayaran.tanggalPembayaran,
                           ).toLocaleTimeString("id-ID", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -180,24 +184,26 @@ export default function LaporanPage() {
                         <TableCell>
                           <div>
                             <p className="font-medium">
-                              {pembayaran.tagihan?.pelanggan?.nama}
+                              {pembayaran.tagihan?.pelanggan?.namaPelanggan}
                             </p>
                             <p className="text-sm text-gray-500 font-mono">
-                              {pembayaran.tagihan?.id_pelanggan}
+                              {pembayaran.tagihan?.pelanggan?.idPelanggan}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           {pembayaran.tagihan
-                            ? `${getMonthName(pembayaran.tagihan.bulan)} ${pembayaran.tagihan.tahun}`
+                            ? formatBulanTagihan(
+                                pembayaran.tagihan.bulanTagihan,
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell className="font-semibold text-emerald-600">
-                          {formatCurrency(pembayaran.total_akhir)}
+                          {formatCurrency(pembayaran.totalBayar)}
                         </TableCell>
                         <TableCell>
                           <Badge variant="info">
-                            {pembayaran.user?.nama_admin || "-"}
+                            {pembayaran.user?.fullName || "-"}
                           </Badge>
                         </TableCell>
                       </TableRow>

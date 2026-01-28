@@ -54,7 +54,8 @@ export default function DashboardPage() {
 
   const totalPelanggan = pelangganData?.pagination?.total || 0;
   const totalTagihanBelumBayar =
-    tagihanData?.data?.filter((t) => t.status === "belum_bayar").length || 0;
+    tagihanData?.data?.filter((t) => t.statusPembayaran === "belum_bayar")
+      .length || 0;
   const totalPendapatanHariIni = laporanData?.data?.total_pendapatan || 0;
   const totalTransaksiHariIni = laporanData?.data?.total_transaksi || 0;
 
@@ -96,7 +97,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <h1 className="text-3xl font-bold mb-2">
-              Selamat Datang, {user?.nama_admin || "User"}! 👋
+              Selamat Datang, {user?.fullName || "User"}! 👋
             </h1>
             <p className="text-blue-100 text-lg max-w-xl">
               Kelola pembayaran listrik pasca bayar dengan mudah dan efisien
@@ -187,16 +188,16 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-gray-900">
-                            {pembayaran.nomor_transaksi}
+                            {pembayaran.nomorTransaksi}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {formatDate(pembayaran.tanggal_pembayaran)}
+                            {formatDate(pembayaran.tanggalPembayaran)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-gray-900">
-                          {formatCurrency(pembayaran.total_akhir)}
+                          {formatCurrency(pembayaran.totalBayar)}
                         </p>
                         <Badge variant="success">Lunas</Badge>
                       </div>

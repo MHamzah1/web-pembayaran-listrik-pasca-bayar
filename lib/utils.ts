@@ -51,6 +51,13 @@ export function getMonthName(month: string): string {
   return months[monthIndex] || month;
 }
 
+export function formatBulanTagihan(bulanTagihan: string): string {
+  // Format: YYYY-MM -> "Bulan Tahun"
+  if (!bulanTagihan) return "";
+  const [year, month] = bulanTagihan.split("-");
+  return `${getMonthName(month)} ${year}`;
+}
+
 export function formatNumber(num: number): string {
   return new Intl.NumberFormat("id-ID").format(num);
 }

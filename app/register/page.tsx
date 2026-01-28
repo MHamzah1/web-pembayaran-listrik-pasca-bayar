@@ -5,7 +5,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Zap, User, Mail, Lock, Eye, EyeOff, Shield } from "lucide-react";
+import {
+  Zap,
+  User,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Shield,
+  Phone,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -14,13 +23,14 @@ import { authService } from "@/services";
 
 const registerSchema = z
   .object({
-    email: z.string().min(3, "email minimal 3 karakter"),
-    password: z.string().min(6, "Password minimal 6 karakter"),
+    email: z.string().email("Format email tidak valid"),
+    password: z.string().min(8, "Password minimal 8 karakter"),
     confirmPassword: z
       .string()
-      .min(6, "Konfirmasi password minimal 6 karakter"),
-    nama_admin: z.string().min(3, "Nama minimal 3 karakter"),
-    role: z.enum(["admin", "petugas"], { message: "Pilih role" }),
+      .min(8, "Konfirmasi password minimal 8 karakter"),
+    fullName: z.string().min(3, "Nama minimal 3 karakter"),
+    phoneNumber: z.string().min(10, "No. Telepon minimal 10 digit"),
+    role: z.enum(["customer", "admin", "salesman"], { message: "Pilih role" }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Password tidak cocok",
@@ -42,7 +52,7 @@ export default function RegisterPage() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: "petugas",
+      role: "customer",
     },
   });
 
@@ -155,16 +165,25 @@ export default function RegisterPage() {
                   label="Nama Lengkap"
                   placeholder="Masukkan nama lengkap"
                   leftIcon={User}
-                  error={errors.nama_admin?.message}
-                  {...register("nama_admin")}
+                  error={errors.fullName?.message}
+                  {...register("fullName")}
                 />
 
                 <Input
-                  label="email"
+                  label="Email"
+                  type="email"
                   placeholder="Masukkan email"
                   leftIcon={Mail}
                   error={errors.email?.message}
                   {...register("email")}
+                />
+
+                <Input
+                  label="No. Telepon"
+                  placeholder="Contoh: +628123456789"
+                  leftIcon={Phone}
+                  error={errors.phoneNumber?.message}
+                  {...register("phoneNumber")}
                 />
 
                 <div className="relative">
@@ -215,7 +234,8 @@ export default function RegisterPage() {
                   label="Role"
                   error={errors.role?.message}
                   options={[
-                    { value: "petugas", label: "Petugas" },
+                    { value: "customer", label: "Customer" },
+                    { value: "salesman", label: "Salesman" },
                     { value: "admin", label: "Admin" },
                   ]}
                   {...register("role")}

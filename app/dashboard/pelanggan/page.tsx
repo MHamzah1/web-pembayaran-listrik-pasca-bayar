@@ -44,11 +44,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 const pelangganSchema = z.object({
-  id_pelanggan: z.string().min(6, "ID Pelanggan minimal 6 karakter"),
-  nama: z.string().min(3, "Nama minimal 3 karakter"),
+  idPelanggan: z.string().length(12, "ID Pelanggan harus 12 digit"),
+  namaPelanggan: z.string().min(3, "Nama minimal 3 karakter"),
   alamat: z.string().min(5, "Alamat minimal 5 karakter"),
-  no_telp: z.string().min(10, "No. Telepon minimal 10 digit"),
-  id_tarif: z.string().min(1, "Pilih tarif"),
+  nomorTelepon: z.string().min(10, "No. Telepon minimal 10 digit"),
+  nomorMeter: z.string().min(1, "Nomor Meter wajib diisi"),
+  tarifId: z.string().min(1, "Pilih tarif"),
+  status: z.enum(["aktif", "nonaktif"]).optional(),
 });
 
 type PelangganFormData = z.infer<typeof pelangganSchema>;
@@ -130,22 +132,24 @@ export default function PelangganPage() {
   const openCreateModal = () => {
     setEditingPelanggan(null);
     reset({
-      id_pelanggan: "",
-      nama: "",
+      idPelanggan: "",
+      namaPelanggan: "",
       alamat: "",
-      no_telp: "",
-      id_tarif: "",
+      nomorTelepon: "",
+      nomorMeter: "",
+      tarifId: "",
     });
     setIsModalOpen(true);
   };
 
   const openEditModal = (pelanggan: Pelanggan) => {
     setEditingPelanggan(pelanggan);
-    setValue("id_pelanggan", pelanggan.id_pelanggan);
-    setValue("nama", pelanggan.nama);
+    setValue("idPelanggan", pelanggan.idPelanggan);
+    setValue("namaPelanggan", pelanggan.namaPelanggan);
     setValue("alamat", pelanggan.alamat);
-    setValue("no_telp", pelanggan.no_telp);
-    setValue("id_tarif", pelanggan.id_tarif);
+    setValue("nomorTelepon", pelanggan.nomorTelepon);
+    setValue("nomorMeter", pelanggan.nomorMeter);
+    setValue("tarifId", pelanggan.tarifId);
     setIsModalOpen(true);
   };
 
@@ -166,7 +170,7 @@ export default function PelangganPage() {
   const handleDelete = (pelanggan: Pelanggan) => {
     Swal.fire({
       title: "Hapus Pelanggan?",
-      text: `Apakah Anda yakin ingin menghapus pelanggan ${pelanggan.nama}?`,
+      text: `Apakah Anda yakin ingin menghapus pelanggan ${pelanggan.namaPelanggan}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -182,7 +186,7 @@ export default function PelangganPage() {
 
   const tarifOptions = (tarifData?.data || []).map((t) => ({
     value: t.id,
-    label: `${t.daya} VA - ${formatCurrency(t.tarifperkwh)}/kWh`,
+    label: `${t.kodeTarif} - ${t.daya} VA - ${formatCurrency(t.tarifPerKwh)}/kWh`,
   }));
 
   const pelangganList = data?.data || [];
@@ -257,15 +261,17 @@ export default function PelangganPage() {
                     <TableRow key={pelanggan.id}>
                       <TableCell>
                         <span className="font-mono font-semibold text-blue-600">
-                          {pelanggan.id_pelanggan}
+                          {pelanggan.idPelanggan}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
-                            {pelanggan.nama.charAt(0).toUpperCase()}
+                            {pelanggan.namaPelanggan.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-medium">{pelanggan.nama}</span>
+                          <span className="font-medium">
+                            {pelanggan.namaPelanggan}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -279,7 +285,7 @@ export default function PelangganPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Phone className="w-4 h-4 text-gray-400" />
-                          {pelanggan.no_telp}
+                          {pelanggan.nomorTelepon}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -344,18 +350,18 @@ export default function PelangganPage() {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <Input
-            label="ID Pelanggan"
-            placeholder="Contoh: 123456789"
-            error={errors.id_pelanggan?.message}
+            label="ID Pelanggan (12 digit)"
+            placeholder="Contoh: 551234567890"
+            error={errors.idPelanggan?.message}
             disabled={!!editingPelanggan}
-            {...register("id_pelanggan")}
+            {...register("idPelanggan")}
           />
 
           <Input
             label="Nama Pelanggan"
             placeholder="Masukkan nama lengkap"
-            error={errors.nama?.message}
-            {...register("nama")}
+            error={errors.namaPelanggan?.message}
+            {...register("namaPelanggan")}
           />
 
           <Input
@@ -367,17 +373,24 @@ export default function PelangganPage() {
 
           <Input
             label="No. Telepon"
-            placeholder="Contoh: 08123456789"
-            error={errors.no_telp?.message}
-            {...register("no_telp")}
+            placeholder="Contoh: +628123456789"
+            error={errors.nomorTelepon?.message}
+            {...register("nomorTelepon")}
+          />
+
+          <Input
+            label="Nomor Meter"
+            placeholder="Contoh: 12345678"
+            error={errors.nomorMeter?.message}
+            {...register("nomorMeter")}
           />
 
           <Select
             label="Tarif Listrik"
             placeholder="Pilih tarif"
             options={tarifOptions}
-            error={errors.id_tarif?.message}
-            {...register("id_tarif")}
+            error={errors.tarifId?.message}
+            {...register("tarifId")}
           />
 
           <div className="flex justify-end gap-3 pt-4">

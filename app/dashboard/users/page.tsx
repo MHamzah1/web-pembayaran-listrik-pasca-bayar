@@ -35,14 +35,17 @@ import { z } from "zod";
 import { useAppSelector } from "@/hooks/useRedux";
 
 const userSchema = z.object({
-  email: z.string().min(3, "email minimal 3 karakter"),
+  email: z.string().email("Format email tidak valid"),
   password: z
     .string()
-    .min(6, "Password minimal 6 karakter")
+    .min(8, "Password minimal 8 karakter")
     .optional()
     .or(z.literal("")),
-  nama_admin: z.string().min(3, "Nama minimal 3 karakter"),
-  role: z.enum(["admin", "petugas"], { required_error: "Pilih role" }),
+  fullName: z.string().min(3, "Nama minimal 3 karakter"),
+  phoneNumber: z.string().min(10, "No. Telepon minimal 10 digit"),
+  role: z.enum(["customer", "admin", "salesman"], {
+    message: "Pilih role",
+  }),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -69,7 +72,7 @@ export default function UsersPage() {
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      role: "petugas",
+      role: "customer",
     },
   });
 
@@ -123,8 +126,9 @@ export default function UsersPage() {
     reset({
       email: "",
       password: "",
-      nama_admin: "",
-      role: "petugas",
+      fullName: "",
+      phoneNumber: "",
+      role: "customer",
     });
     setIsModalOpen(true);
   };
@@ -132,7 +136,8 @@ export default function UsersPage() {
   const openEditModal = (user: User) => {
     setEditingUser(user);
     setValue("email", user.email);
-    setValue("nama_admin", user.nama_admin);
+    setValue("fullName", user.fullName);
+    setValue("phoneNumber", user.phoneNumber || "");
     setValue("role", user.role);
     setValue("password", "");
     setIsModalOpen(true);
@@ -148,7 +153,8 @@ export default function UsersPage() {
     if (editingUser) {
       const updateData: Partial<RegisterRequest> = {
         email: formData.email,
-        nama_admin: formData.nama_admin,
+        fullName: formData.fullName,
+        phoneNumber: formData.phoneNumber,
         role: formData.role,
       };
       if (formData.password) {
@@ -172,7 +178,7 @@ export default function UsersPage() {
 
     Swal.fire({
       title: "Hapus Pengguna?",
-      text: `Apakah Anda yakin ingin menghapus pengguna ${user.nama_admin}?`,
+      text: `Apakah Anda yakin ingin menghapus pengguna ${user.fullName}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -269,25 +275,36 @@ export default function UsersPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
-                            {user.nama_admin.charAt(0).toUpperCase()}
+                            {user.fullName.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-medium">{user.nama_admin}</span>
+                          <span className="font-medium">{user.fullName}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono">@{user.email}</TableCell>
+                      <TableCell className="font-mono">{user.email}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={user.role === "admin" ? "purple" : "primary"}
+                          variant={
+                            user.role === "admin"
+                              ? "purple"
+                              : user.role === "salesman"
+                                ? "primary"
+                                : "info"
+                          }
                         >
                           {user.role === "admin" ? (
                             <>
                               <Shield className="w-3 h-3 mr-1" />
                               Admin
                             </>
+                          ) : user.role === "salesman" ? (
+                            <>
+                              <UserCircle className="w-3 h-3 mr-1" />
+                              Salesman
+                            </>
                           ) : (
                             <>
                               <UserCircle className="w-3 h-3 mr-1" />
-                              Petugas
+                              Customer
                             </>
                           )}
                         </Badge>
@@ -347,15 +364,23 @@ export default function UsersPage() {
           <Input
             label="Nama Lengkap"
             placeholder="Masukkan nama lengkap"
-            error={errors.nama_admin?.message}
-            {...register("nama_admin")}
+            error={errors.fullName?.message}
+            {...register("fullName")}
           />
 
           <Input
-            label="email"
+            label="Email"
+            type="email"
             placeholder="Masukkan email"
             error={errors.email?.message}
             {...register("email")}
+          />
+
+          <Input
+            label="No. Telepon"
+            placeholder="Contoh: +628123456789"
+            error={errors.phoneNumber?.message}
+            {...register("phoneNumber")}
           />
 
           <Input
@@ -366,7 +391,9 @@ export default function UsersPage() {
             }
             type="password"
             placeholder={
-              editingUser ? "Kosongkan jika tidak diubah" : "Masukkan password"
+              editingUser
+                ? "Kosongkan jika tidak diubah"
+                : "Masukkan password (min 8 karakter)"
             }
             error={errors.password?.message}
             {...register("password")}
@@ -375,7 +402,8 @@ export default function UsersPage() {
           <Select
             label="Role"
             options={[
-              { value: "petugas", label: "Petugas" },
+              { value: "customer", label: "Customer" },
+              { value: "salesman", label: "Salesman" },
               { value: "admin", label: "Admin" },
             ]}
             error={errors.role?.message}
