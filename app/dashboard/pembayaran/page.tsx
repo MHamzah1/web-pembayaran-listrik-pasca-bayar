@@ -65,7 +65,7 @@ export default function PembayaranPage() {
 
   const { data: historyData, isLoading: loadingHistory } = useQuery({
     queryKey: ["pembayaran-history", currentPage, historySearch],
-    queryFn: () => pembayaranService.getAll(currentPage, 10, historySearch),
+    queryFn: () => pembayaranService.getAll({ page: currentPage, perPage: 10 }),
   });
 
   const createMutation = useMutation({
@@ -77,12 +77,10 @@ export default function PembayaranPage() {
       toast.success("Pembayaran berhasil!");
 
       // Get struk
-      if (response.data?.id) {
+      if (response?.id) {
         try {
-          const strukResponse = await pembayaranService.getStruk(
-            response.data.id,
-          );
-          setStrukData(strukResponse.data);
+          const strukResponse = await pembayaranService.getStruk(response.id);
+          setStrukData(strukResponse.struk);
           setShowStrukModal(true);
         } catch (error) {
           console.error("Error fetching struk:", error);
@@ -115,14 +113,14 @@ export default function PembayaranPage() {
       // Get pelanggan data
       const pelangganResponse =
         await pelangganService.getByIdPelanggan(idPelanggan);
-      if (pelangganResponse.data) {
-        setPelanggan(pelangganResponse.data);
+      if (pelangganResponse) {
+        setPelanggan(pelangganResponse);
 
         // Get unpaid tagihan
         const tagihanResponse =
           await tagihanService.getUnpaidByIdPelanggan(idPelanggan);
-        if (tagihanResponse.data) {
-          setTagihanList(tagihanResponse.data);
+        if (tagihanResponse) {
+          setTagihanList(tagihanResponse);
         }
       }
     } catch (error: any) {
@@ -164,7 +162,7 @@ export default function PembayaranPage() {
 
   const getTotalBayar = () => {
     return selectedTagihan.reduce((total, tagihan) => {
-      return total + tagihan.totalTagihan + tagihan.denda;
+      return total + Number(tagihan.totalTagihan) + Number(tagihan.denda);
     }, 0);
   };
 
@@ -173,7 +171,7 @@ export default function PembayaranPage() {
   };
 
   const historyList = historyData?.data || [];
-  const pagination = historyData?.pagination;
+  const totalPages = historyData?.lastPage || 1;
 
   return (
     <motion.div
@@ -331,7 +329,7 @@ export default function PembayaranPage() {
                                 <p className="font-bold text-gray-900">
                                   {formatCurrency(tagihan.totalTagihan)}
                                 </p>
-                                {tagihan.denda > 0 && (
+                                {Number(tagihan.denda) > 0 && (
                                   <p className="text-sm text-red-500">
                                     +{formatCurrency(tagihan.denda)} denda
                                   </p>
@@ -374,7 +372,10 @@ export default function PembayaranPage() {
                           {formatBulanTagihan(tagihan.bulanTagihan)}
                         </span>
                         <span className="font-medium">
-                          {formatCurrency(tagihan.totalTagihan + tagihan.denda)}
+                          {formatCurrency(
+                            Number(tagihan.totalTagihan) +
+                              Number(tagihan.denda),
+                          )}
                         </span>
                       </div>
                     ))}
@@ -471,11 +472,11 @@ export default function PembayaranPage() {
                 </TableBody>
               </Table>
 
-              {pagination && (
+              {totalPages > 1 && (
                 <div className="mt-6">
                   <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
                     onPageChange={setCurrentPage}
                   />
                 </div>
@@ -522,49 +523,59 @@ export default function PembayaranPage() {
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">ID Pelanggan</span>
-                  <span className="font-mono">{strukData.idPelanggan}</span>
+                  <span className="font-mono">
+                    {strukData.pelanggan.idPelanggan}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Nama</span>
-                  <span>{strukData.namaPelanggan}</span>
+                  <span>{strukData.pelanggan.namaPelanggan}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Periode</span>
-                  <span>{formatBulanTagihan(strukData.bulanTagihan)}</span>
+                  <span>
+                    {formatBulanTagihan(strukData.tagihan.bulanTagihan)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Daya</span>
-                  <span>{strukData.daya} VA</span>
+                  <span>{strukData.pelanggan.daya}</span>
                 </div>
               </div>
 
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Meter Awal</span>
-                  <span>{formatNumber(strukData.meterAwal)}</span>
+                  <span>{formatNumber(strukData.tagihan.meterAwal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Meter Akhir</span>
-                  <span>{formatNumber(strukData.meterAkhir)}</span>
+                  <span>{formatNumber(strukData.tagihan.meterAkhir)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Pemakaian</span>
-                  <span>{formatNumber(strukData.jumlahPemakaian)} kWh</span>
+                  <span>
+                    {formatNumber(strukData.tagihan.jumlahPemakaian)} kWh
+                  </span>
                 </div>
               </div>
 
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Tagihan</span>
-                  <span>{formatCurrency(strukData.biayaPemakaian)}</span>
+                  <span>
+                    {formatCurrency(Number(strukData.tagihan.biayaPemakaian))}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Denda</span>
-                  <span>{formatCurrency(strukData.denda)}</span>
+                  <span>{formatCurrency(Number(strukData.tagihan.denda))}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Biaya Admin</span>
-                  <span>{formatCurrency(strukData.biayaAdmin)}</span>
+                  <span>
+                    {formatCurrency(Number(strukData.tagihan.biayaAdmin))}
+                  </span>
                 </div>
               </div>
 
@@ -572,13 +583,13 @@ export default function PembayaranPage() {
                 <div className="flex justify-between text-lg font-bold">
                   <span>TOTAL</span>
                   <span className="text-emerald-600">
-                    {formatCurrency(strukData.totalBayar)}
+                    {formatCurrency(Number(strukData.totalBayar))}
                   </span>
                 </div>
               </div>
 
               <div className="border-t border-dashed border-gray-300 mt-4 pt-4 text-center text-sm text-gray-500">
-                <p>Petugas: {strukData.petugas}</p>
+                <p>Kasir: {strukData.kasir}</p>
                 <p className="mt-2">Terima kasih atas pembayaran Anda</p>
               </div>
             </div>

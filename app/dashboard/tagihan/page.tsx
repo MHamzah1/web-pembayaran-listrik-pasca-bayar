@@ -63,7 +63,7 @@ export default function TagihanPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["tagihan", currentPage, searchQuery],
-    queryFn: () => tagihanService.getAll(currentPage, 10, searchQuery),
+    queryFn: () => tagihanService.getAll({ page: currentPage, perPage: 10 }),
   });
 
   // Check pelanggan by ID
@@ -156,7 +156,7 @@ export default function TagihanPage() {
   };
 
   const tagihanList = data?.data || [];
-  const pagination = data?.pagination;
+  const totalPages = data?.lastPage || 1;
 
   return (
     <motion.div
@@ -257,7 +257,7 @@ export default function TagihanPage() {
                           <p className="font-semibold text-gray-900">
                             {formatCurrency(tagihan.totalTagihan)}
                           </p>
-                          {tagihan.denda > 0 && (
+                          {Number(tagihan.denda) > 0 && (
                             <p className="text-xs text-red-500">
                               +{formatCurrency(tagihan.denda)} denda
                             </p>
@@ -295,11 +295,11 @@ export default function TagihanPage() {
                 </TableBody>
               </Table>
 
-              {pagination && (
+              {totalPages > 1 && (
                 <div className="mt-6">
                   <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
                     onPageChange={setCurrentPage}
                   />
                 </div>
@@ -331,14 +331,13 @@ export default function TagihanPage() {
               <div className="mt-2">
                 {loadingPelanggan ? (
                   <p className="text-sm text-gray-500">Mencari pelanggan...</p>
-                ) : pelangganData?.data ? (
+                ) : pelangganData ? (
                   <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                     <p className="text-sm font-medium text-green-800">
-                      ✓ {pelangganData.data.namaPelanggan}
+                      ✓ {pelangganData.namaPelanggan}
                     </p>
                     <p className="text-xs text-green-600">
-                      {pelangganData.data.alamat} |{" "}
-                      {pelangganData.data.tarif?.daya} VA
+                      {pelangganData.alamat} | {pelangganData.tarif?.daya}
                     </p>
                   </div>
                 ) : (
@@ -383,7 +382,7 @@ export default function TagihanPage() {
             <Button
               type="submit"
               isLoading={createMutation.isPending}
-              disabled={!pelangganData?.data}
+              disabled={!pelangganData}
             >
               Buat Tagihan
             </Button>

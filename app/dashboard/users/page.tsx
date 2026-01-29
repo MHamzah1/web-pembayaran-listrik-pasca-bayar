@@ -27,7 +27,7 @@ import {
   Badge,
 } from "@/components/ui";
 import { userService } from "@/services";
-import { User, RegisterRequest } from "@/types";
+import { User, UserRequest } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +43,9 @@ const userSchema = z.object({
     .or(z.literal("")),
   fullName: z.string().min(3, "Nama minimal 3 karakter"),
   phoneNumber: z.string().min(10, "No. Telepon minimal 10 digit"),
-  role: z.enum(["customer", "admin", "salesman"], {
+  whatsappNumber: z.string().min(10, "No. WhatsApp minimal 10 digit"),
+  location: z.string().min(3, "Lokasi minimal 3 karakter"),
+  role: z.enum(["customer", "admin"], {
     message: "Pilih role",
   }),
 });
@@ -60,7 +62,12 @@ export default function UsersPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["users", currentPage, searchQuery],
-    queryFn: () => userService.getPaged(currentPage, 10, searchQuery),
+    queryFn: () =>
+      userService.getPaged({
+        page: currentPage,
+        perPage: 10,
+        search: searchQuery,
+      }),
   });
 
   const {
@@ -77,7 +84,7 @@ export default function UsersPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: RegisterRequest) => userService.create(data),
+    mutationFn: (data: UserRequest) => userService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("Pengguna berhasil ditambahkan");
@@ -91,13 +98,8 @@ export default function UsersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<RegisterRequest>;
-    }) => userService.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<UserRequest> }) =>
+      userService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("Pengguna berhasil diperbarui");
@@ -128,6 +130,8 @@ export default function UsersPage() {
       password: "",
       fullName: "",
       phoneNumber: "",
+      whatsappNumber: "",
+      location: "",
       role: "customer",
     });
     setIsModalOpen(true);
@@ -138,6 +142,8 @@ export default function UsersPage() {
     setValue("email", user.email);
     setValue("fullName", user.fullName);
     setValue("phoneNumber", user.phoneNumber || "");
+    setValue("whatsappNumber", user.whatsappNumber || "");
+    setValue("location", user.location || "");
     setValue("role", user.role);
     setValue("password", "");
     setIsModalOpen(true);
@@ -151,10 +157,12 @@ export default function UsersPage() {
 
   const onSubmit = (formData: UserFormData) => {
     if (editingUser) {
-      const updateData: Partial<RegisterRequest> = {
+      const updateData: Partial<UserRequest> = {
         email: formData.email,
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
+        whatsappNumber: formData.whatsappNumber,
+        location: formData.location,
         role: formData.role,
       };
       if (formData.password) {
@@ -166,7 +174,7 @@ export default function UsersPage() {
         toast.error("Password harus diisi");
         return;
       }
-      createMutation.mutate(formData as RegisterRequest);
+      createMutation.mutate(formData as UserRequest);
     }
   };
 
@@ -193,7 +201,7 @@ export default function UsersPage() {
   };
 
   const userList = data?.data || [];
-  const pagination = data?.pagination;
+  const totalPages = data?.lastPage || 1;
 
   // Check if current user is admin
   if (currentUser?.role !== "admin") {
@@ -283,23 +291,12 @@ export default function UsersPage() {
                       <TableCell className="font-mono">{user.email}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            user.role === "admin"
-                              ? "purple"
-                              : user.role === "salesman"
-                                ? "primary"
-                                : "info"
-                          }
+                          variant={user.role === "admin" ? "purple" : "info"}
                         >
                           {user.role === "admin" ? (
                             <>
                               <Shield className="w-3 h-3 mr-1" />
                               Admin
-                            </>
-                          ) : user.role === "salesman" ? (
-                            <>
-                              <UserCircle className="w-3 h-3 mr-1" />
-                              Salesman
                             </>
                           ) : (
                             <>
@@ -334,11 +331,11 @@ export default function UsersPage() {
                 </TableBody>
               </Table>
 
-              {pagination && (
+              {totalPages > 1 && (
                 <div className="mt-6">
                   <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
                     onPageChange={setCurrentPage}
                   />
                 </div>
@@ -384,6 +381,20 @@ export default function UsersPage() {
           />
 
           <Input
+            label="No. WhatsApp"
+            placeholder="Contoh: +628123456789"
+            error={errors.whatsappNumber?.message}
+            {...register("whatsappNumber")}
+          />
+
+          <Input
+            label="Lokasi"
+            placeholder="Masukkan alamat/lokasi"
+            error={errors.location?.message}
+            {...register("location")}
+          />
+
+          <Input
             label={
               editingUser
                 ? "Password Baru (kosongkan jika tidak diubah)"
@@ -403,7 +414,6 @@ export default function UsersPage() {
             label="Role"
             options={[
               { value: "customer", label: "Customer" },
-              { value: "salesman", label: "Salesman" },
               { value: "admin", label: "Admin" },
             ]}
             error={errors.role?.message}

@@ -66,7 +66,12 @@ export default function PelangganPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["pelanggan", currentPage, searchQuery],
-    queryFn: () => pelangganService.getAll(currentPage, 10, searchQuery),
+    queryFn: () =>
+      pelangganService.getAll({
+        page: currentPage,
+        perPage: 10,
+        search: searchQuery,
+      }),
   });
 
   const { data: tarifData } = useQuery({
@@ -184,13 +189,13 @@ export default function PelangganPage() {
     });
   };
 
-  const tarifOptions = (tarifData?.data || []).map((t) => ({
+  const tarifOptions = (tarifData || []).map((t) => ({
     value: t.id,
-    label: `${t.kodeTarif} - ${t.daya} VA - ${formatCurrency(t.tarifPerKwh)}/kWh`,
+    label: `${t.kodeTarif} - ${t.daya} - ${formatCurrency(Number(t.tarifPerKwh))}/kWh`,
   }));
 
   const pelangganList = data?.data || [];
-  const pagination = data?.pagination;
+  const totalPages = data?.lastPage || 1;
 
   return (
     <motion.div
@@ -322,11 +327,11 @@ export default function PelangganPage() {
                 </TableBody>
               </Table>
 
-              {pagination && (
+              {totalPages > 1 && (
                 <div className="mt-6">
                   <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
                     onPageChange={setCurrentPage}
                   />
                 </div>

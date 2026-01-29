@@ -1,36 +1,54 @@
 import api from "@/lib/api";
-import {
-  Pelanggan,
-  PelangganRequest,
-  ApiResponse,
-  PaginatedResponse,
-} from "@/types";
+import { Pelanggan, PelangganRequest, PaginatedResponse } from "@/types";
+
+interface PelangganFilters {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  status?: string;
+  tarifId?: string;
+  orderBy?: string;
+  sortDirection?: "ASC" | "DESC";
+}
 
 export const pelangganService = {
   getAll: async (
-    page = 1,
-    limit = 10,
-    search = "",
+    filters: PelangganFilters = {},
   ): Promise<PaginatedResponse<Pelanggan>> => {
+    const {
+      page = 1,
+      perPage = 10,
+      search,
+      status,
+      tarifId,
+      orderBy,
+      sortDirection,
+    } = filters;
     const response = await api.get("/pelanggan", {
-      params: { page, limit, search },
+      params: {
+        page,
+        perPage,
+        search,
+        status,
+        tarifId,
+        orderBy,
+        sortDirection,
+      },
     });
     return response.data;
   },
 
-  getById: async (id: string): Promise<ApiResponse<Pelanggan>> => {
+  getById: async (id: string): Promise<Pelanggan> => {
     const response = await api.get(`/pelanggan/${id}`);
     return response.data;
   },
 
-  getByIdPelanggan: async (
-    idPelanggan: string,
-  ): Promise<ApiResponse<Pelanggan>> => {
+  getByIdPelanggan: async (idPelanggan: string): Promise<Pelanggan> => {
     const response = await api.get(`/pelanggan/cek/${idPelanggan}`);
     return response.data;
   },
 
-  create: async (data: PelangganRequest): Promise<ApiResponse<Pelanggan>> => {
+  create: async (data: PelangganRequest): Promise<Pelanggan> => {
     const response = await api.post("/pelanggan", data);
     return response.data;
   },
@@ -38,13 +56,12 @@ export const pelangganService = {
   update: async (
     id: string,
     data: Partial<PelangganRequest>,
-  ): Promise<ApiResponse<Pelanggan>> => {
+  ): Promise<Pelanggan> => {
     const response = await api.put(`/pelanggan/${id}`, data);
     return response.data;
   },
 
-  delete: async (id: string): Promise<ApiResponse<null>> => {
-    const response = await api.delete(`/pelanggan/${id}`);
-    return response.data;
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/pelanggan/${id}`);
   },
 };

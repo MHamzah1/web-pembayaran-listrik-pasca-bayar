@@ -5,13 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | string): string {
+  const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(numAmount);
 }
 
 export function formatDate(date: string): string {
@@ -58,6 +59,7 @@ export function formatBulanTagihan(bulanTagihan: string): string {
   return `${getMonthName(month)} ${year}`;
 }
 
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat("id-ID").format(num);
+export function formatNumber(num: number | string): string {
+  const numValue = typeof num === "string" ? parseFloat(num) : num;
+  return new Intl.NumberFormat("id-ID").format(numValue);
 }
