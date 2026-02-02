@@ -44,7 +44,7 @@ export default function LaporanPage() {
     queryFn: () => pembayaranService.getLaporanHarian(selectedDate),
   });
 
-  const laporanData = data?.data;
+  const laporanData = data;
   const pembayaranList = laporanData?.pembayaran || [];
 
   const changeDate = (days: number) => {
@@ -120,14 +120,14 @@ export default function LaporanPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <StatCard
               title="Total Transaksi"
-              value={laporanData?.total_transaksi || 0}
+              value={laporanData?.totalTransaksi || 0}
               icon={CreditCard}
               gradient="blue"
               description="Transaksi berhasil"
             />
             <StatCard
               title="Total Pendapatan"
-              value={formatCurrency(laporanData?.total_pendapatan || 0)}
+              value={formatCurrency(laporanData?.totalPendapatan || 0)}
               icon={TrendingUp}
               gradient="green"
               description="Pendapatan hari ini"
@@ -223,10 +223,10 @@ export default function LaporanPage() {
                       Total Pendapatan Hari Ini
                     </p>
                     <p className="text-4xl font-bold mt-1">
-                      {formatCurrency(laporanData?.total_pendapatan || 0)}
+                      {formatCurrency(laporanData?.totalPendapatan || 0)}
                     </p>
                     <p className="text-emerald-100 mt-2">
-                      Dari {laporanData?.total_transaksi || 0} transaksi
+                      Dari {laporanData?.totalTransaksi || 0} transaksi
                     </p>
                   </div>
                   <div className="flex gap-3">

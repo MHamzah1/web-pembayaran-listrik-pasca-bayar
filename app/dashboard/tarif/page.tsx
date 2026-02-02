@@ -35,7 +35,7 @@ const tarifSchema = z.object({
   kodeTarif: z.string().min(1, "Kode tarif wajib diisi"),
   deskripsi: z.string().min(1, "Deskripsi wajib diisi"),
   tarifPerKwh: z.number().min(1, "Tarif minimal Rp 1"),
-  daya: z.number().min(1, "Daya minimal 1 VA"),
+  daya: z.string().min(1, "Daya wajib diisi"),
 });
 
 type TarifFormData = z.infer<typeof tarifSchema>;
@@ -100,7 +100,7 @@ export default function TarifPage() {
 
   const openCreateModal = () => {
     setEditingTarif(null);
-    reset({ kodeTarif: "", deskripsi: "", tarifPerKwh: 0, daya: 0 });
+    reset({ kodeTarif: "", deskripsi: "", tarifPerKwh: 0, daya: "" });
     setIsModalOpen(true);
   };
 
@@ -108,8 +108,8 @@ export default function TarifPage() {
     setEditingTarif(tarif);
     setValue("kodeTarif", tarif.kodeTarif);
     setValue("deskripsi", tarif.deskripsi);
-    setValue("tarifPerKwh", tarif.tarifPerKwh);
-    setValue("daya", tarif.daya);
+    setValue("tarifPerKwh", Number(tarif.tarifPerKwh));
+    setValue("daya", String(tarif.daya));
     setIsModalOpen(true);
   };
 
@@ -144,13 +144,13 @@ export default function TarifPage() {
     });
   };
 
-  const tarifList = data?.data || [];
+  const tarifList = data || [];
   const filteredTarif = tarifList.filter(
     (t) =>
       t.kodeTarif.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.deskripsi.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.daya.toString().includes(searchQuery) ||
-      t.tarifPerKwh.toString().includes(searchQuery),
+      String(t.daya).includes(searchQuery) ||
+      String(t.tarifPerKwh).includes(searchQuery),
   );
 
   return (
@@ -287,11 +287,10 @@ export default function TarifPage() {
           />
 
           <Input
-            label="Daya (VA)"
-            type="number"
-            placeholder="Contoh: 900"
+            label="Daya"
+            placeholder="Contoh: 900 VA"
             error={errors.daya?.message}
-            {...register("daya", { valueAsNumber: true })}
+            {...register("daya")}
           />
 
           <Input

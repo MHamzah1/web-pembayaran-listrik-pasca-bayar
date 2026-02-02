@@ -4,9 +4,9 @@ export interface User {
   email: string;
   fullName: string;
   phoneNumber: string;
-  whatsappNumber?: string;
-  location?: string;
-  role: "customer" | "admin" | "salesman";
+  whatsappNumber: string;
+  location: string;
+  role: "customer" | "admin";
   createdAt: string;
   updatedAt: string;
 }
@@ -20,7 +20,13 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
-  user: User;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    role: string;
+    whatsappNumber: string;
+  };
 }
 
 export interface RegisterRequest {
@@ -28,9 +34,19 @@ export interface RegisterRequest {
   password: string;
   fullName: string;
   phoneNumber: string;
-  whatsappNumber?: string;
-  location?: string;
-  role: "customer" | "admin" | "salesman";
+  whatsappNumber: string;
+  location: string;
+  role: "customer" | "admin";
+}
+
+export interface UserRequest {
+  email: string;
+  password?: string;
+  fullName: string;
+  phoneNumber: string;
+  whatsappNumber: string;
+  location: string;
+  role: "customer" | "admin";
 }
 
 // Tarif Types
@@ -38,7 +54,7 @@ export interface Tarif {
   id: string;
   kodeTarif: string;
   deskripsi: string;
-  tarifPerKwh: number;
+  tarifPerKwh: string | number;
   daya: number;
   createdAt: string;
   updatedAt: string;
@@ -48,7 +64,7 @@ export interface TarifRequest {
   kodeTarif: string;
   deskripsi: string;
   tarifPerKwh: number;
-  daya: number;
+  daya: string;
 }
 
 // Pelanggan Types
@@ -80,18 +96,19 @@ export interface PelangganRequest {
 export interface Tagihan {
   id: string;
   pelangganId: string;
+  pelanggan?: Pelanggan;
   bulanTagihan: string;
-  meterAwal: number;
-  meterAkhir: number;
-  jumlahPemakaian: number;
-  tarifPerKwh: number;
-  biayaPemakaian: number;
-  biayaAdmin: number;
-  denda: number;
-  totalTagihan: number;
+  meterAwal: string | number;
+  meterAkhir: string | number;
+  jumlahPemakaian: string | number;
+  tarifPerKwh: string | number;
+  biayaPemakaian: string | number;
+  biayaAdmin: string | number;
+  denda: string | number;
+  totalTagihan: string | number;
   statusPembayaran: "belum_bayar" | "lunas";
   jatuhTempo: string;
-  pelanggan?: Pelanggan;
+  pembayaran?: Pembayaran | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -107,18 +124,16 @@ export interface TagihanRequest {
 export interface Pembayaran {
   id: string;
   tagihanId: string;
+  tagihan?: Tagihan;
   userId: string;
+  user?: User;
   nomorTransaksi: string;
-  totalBayar: number;
+  totalBayar: string | number;
   metodePembayaran: "tunai" | "transfer_bank" | "virtual_account" | "qris";
   namaBank?: string;
   nomorReferensi?: string;
   tanggalPembayaran: string;
   statusTransaksi: "pending" | "success" | "failed";
-  tagihan?: Tagihan;
-  user?: User;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PembayaranRequest {
@@ -128,48 +143,56 @@ export interface PembayaranRequest {
   nomorReferensi?: string;
 }
 
+// Struk Types - sesuai response API
+export interface StrukPelanggan {
+  idPelanggan: string;
+  namaPelanggan: string;
+  alamat: string;
+  tarif: string;
+  daya: number;
+}
+
+export interface StrukTagihan {
+  bulanTagihan: string;
+  meterAwal: string | number;
+  meterAkhir: string | number;
+  jumlahPemakaian: string | number;
+  tarifPerKwh: string | number;
+  biayaPemakaian: string | number;
+  biayaAdmin: string | number;
+  denda: string | number;
+  totalTagihan: string | number;
+}
+
 export interface Struk {
   nomorTransaksi: string;
   tanggalPembayaran: string;
-  namaPelanggan: string;
-  idPelanggan: string;
-  alamat: string;
-  bulanTagihan: string;
-  meterAwal: number;
-  meterAkhir: number;
-  jumlahPemakaian: number;
-  tarifPerKwh: number;
-  daya: number;
-  biayaPemakaian: number;
-  biayaAdmin: number;
-  denda: number;
-  totalBayar: number;
-  petugas: string;
+  metodePembayaran: string;
+  namaBank?: string;
+  pelanggan: StrukPelanggan;
+  tagihan: StrukTagihan;
+  totalBayar: string | number;
+  statusTransaksi: string;
+  kasir: string;
 }
 
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
+export interface StrukResponse {
+  struk: Struk;
 }
 
+// API Response Types - sesuai response API
 export interface PaginatedResponse<T> {
-  success: boolean;
-  message: string;
   data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  total: number;
+  page: number;
+  perPage: number;
+  lastPage: number;
 }
 
-// Laporan Harian
+// Laporan Harian - sesuai response API
 export interface LaporanHarian {
   tanggal: string;
-  total_transaksi: number;
-  total_pendapatan: number;
+  totalTransaksi: number;
+  totalPendapatan: number;
   pembayaran: Pembayaran[];
 }

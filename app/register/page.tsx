@@ -14,6 +14,8 @@ import {
   EyeOff,
   Shield,
   Phone,
+  MapPin,
+  MessageCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -30,7 +32,9 @@ const registerSchema = z
       .min(8, "Konfirmasi password minimal 8 karakter"),
     fullName: z.string().min(3, "Nama minimal 3 karakter"),
     phoneNumber: z.string().min(10, "No. Telepon minimal 10 digit"),
-    role: z.enum(["customer", "admin", "salesman"], { message: "Pilih role" }),
+    whatsappNumber: z.string().min(10, "No. WhatsApp minimal 10 digit"),
+    location: z.string().min(3, "Lokasi minimal 3 karakter"),
+    role: z.enum(["customer", "admin"], { message: "Pilih role" }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Password tidak cocok",
@@ -61,14 +65,9 @@ export default function RegisterPage() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = data;
-      const response = await authService.register(registerData);
-
-      if (response.success) {
-        toast.success("Registrasi berhasil! Silakan login.");
-        router.push("/login");
-      } else {
-        toast.error(response.message || "Registrasi gagal");
-      }
+      await authService.register(registerData);
+      toast.success("Registrasi berhasil! Silakan login.");
+      router.push("/login");
     } catch (error: unknown) {
       const axiosError = error as {
         response?: { data?: { message?: string } };
@@ -186,6 +185,22 @@ export default function RegisterPage() {
                   {...register("phoneNumber")}
                 />
 
+                <Input
+                  label="No. WhatsApp"
+                  placeholder="Contoh: +628123456789"
+                  leftIcon={MessageCircle}
+                  error={errors.whatsappNumber?.message}
+                  {...register("whatsappNumber")}
+                />
+
+                <Input
+                  label="Lokasi"
+                  placeholder="Masukkan alamat/lokasi"
+                  leftIcon={MapPin}
+                  error={errors.location?.message}
+                  {...register("location")}
+                />
+
                 <div className="relative">
                   <Input
                     label="Password"
@@ -235,7 +250,6 @@ export default function RegisterPage() {
                   error={errors.role?.message}
                   options={[
                     { value: "customer", label: "Customer" },
-                    { value: "salesman", label: "Salesman" },
                     { value: "admin", label: "Admin" },
                   ]}
                   {...register("role")}

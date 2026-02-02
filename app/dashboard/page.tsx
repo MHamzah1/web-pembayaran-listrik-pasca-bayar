@@ -34,17 +34,17 @@ export default function DashboardPage() {
 
   const { data: pelangganData, isLoading: loadingPelanggan } = useQuery({
     queryKey: ["pelanggan"],
-    queryFn: () => pelangganService.getAll(1, 1000),
+    queryFn: () => pelangganService.getAll({ page: 1, perPage: 1000 }),
   });
 
   const { data: tagihanData, isLoading: loadingTagihan } = useQuery({
     queryKey: ["tagihan"],
-    queryFn: () => tagihanService.getAll(1, 1000),
+    queryFn: () => tagihanService.getAll({ page: 1, perPage: 1000 }),
   });
 
   const { data: pembayaranData, isLoading: loadingPembayaran } = useQuery({
     queryKey: ["pembayaran"],
-    queryFn: () => pembayaranService.getAll(1, 10),
+    queryFn: () => pembayaranService.getAll({ page: 1, perPage: 10 }),
   });
 
   const { data: laporanData, isLoading: loadingLaporan } = useQuery({
@@ -52,12 +52,12 @@ export default function DashboardPage() {
     queryFn: () => pembayaranService.getLaporanHarian(),
   });
 
-  const totalPelanggan = pelangganData?.pagination?.total || 0;
+  const totalPelanggan = pelangganData?.total || 0;
   const totalTagihanBelumBayar =
     tagihanData?.data?.filter((t) => t.statusPembayaran === "belum_bayar")
       .length || 0;
-  const totalPendapatanHariIni = laporanData?.data?.total_pendapatan || 0;
-  const totalTransaksiHariIni = laporanData?.data?.total_transaksi || 0;
+  const totalPendapatanHariIni = laporanData?.totalPendapatan || 0;
+  const totalTransaksiHariIni = laporanData?.totalTransaksi || 0;
 
   const recentPembayaran = pembayaranData?.data?.slice(0, 5) || [];
 
