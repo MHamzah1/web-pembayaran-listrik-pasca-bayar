@@ -91,7 +91,7 @@ export default function PelangganPage() {
       toast.success("Pelanggan berhasil ditambahkan");
       closeModal();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Gagal menambahkan pelanggan",
       );
@@ -111,7 +111,7 @@ export default function PelangganPage() {
       toast.success("Pelanggan berhasil diperbarui");
       closeModal();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Gagal memperbarui pelanggan",
       );
@@ -124,7 +124,7 @@ export default function PelangganPage() {
       queryClient.invalidateQueries({ queryKey: ["pelanggan"] });
       toast.success("Pelanggan berhasil dihapus");
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || "Gagal menghapus pelanggan");
     },
   });

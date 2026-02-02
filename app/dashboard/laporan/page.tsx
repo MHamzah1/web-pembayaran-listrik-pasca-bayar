@@ -31,7 +31,6 @@ import {
 import { pembayaranService } from "@/services";
 import {
   formatCurrency,
-  formatDateTime,
   formatBulanTagihan,
 } from "@/lib/utils";
 
@@ -40,7 +39,7 @@ export default function LaporanPage() {
     new Date().toISOString().split("T")[0],
   );
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["laporan-harian", selectedDate],
     queryFn: () => pembayaranService.getLaporanHarian(selectedDate),
   });

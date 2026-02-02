@@ -92,7 +92,7 @@ export default function PembayaranPage() {
       // Reset form
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Gagal memproses pembayaran",
       );
@@ -125,8 +125,9 @@ export default function PembayaranPage() {
           setTagihanList(tagihanResponse.data);
         }
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Pelanggan tidak ditemukan");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Pelanggan tidak ditemukan");
     } finally {
       setIsSearching(false);
       setSearchDone(true);
@@ -298,20 +299,18 @@ export default function PembayaranPage() {
                           <div
                             key={tagihan.id}
                             onClick={() => handleSelectTagihan(tagihan)}
-                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                              isSelected
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300 bg-white"
-                            }`}
+                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300 bg-white"
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                 <div
-                                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                    isSelected
-                                      ? "border-blue-500 bg-blue-500"
-                                      : "border-gray-300"
-                                  }`}
+                                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
+                                    ? "border-blue-500 bg-blue-500"
+                                    : "border-gray-300"
+                                    }`}
                                 >
                                   {isSelected && (
                                     <CheckCircle className="w-4 h-4 text-white" />

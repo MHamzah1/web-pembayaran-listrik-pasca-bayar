@@ -83,7 +83,7 @@ export default function UsersPage() {
       toast.success("Pengguna berhasil ditambahkan");
       closeModal();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Gagal menambahkan pengguna",
       );
@@ -103,7 +103,7 @@ export default function UsersPage() {
       toast.success("Pengguna berhasil diperbarui");
       closeModal();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Gagal memperbarui pengguna",
       );
@@ -116,7 +116,7 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("Pengguna berhasil dihapus");
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || "Gagal menghapus pengguna");
     },
   });
